@@ -44,6 +44,8 @@
 ;;             (require 'imenu-extra)
 ;;             (imenu-extra-auto-setup '(("tdd.it" "^[ \t]*it('\\([^']+\\)" 1)
 ;;                                       ("tdd.desc" "^[ \t]*describe('\\([^']+\\)" 1))))
+;; Tips:
+;;   - Set `imenu-extra-process-item-function' to process extra imenu items
 ;;
 ;; Usage,
 ;;   Use imenu as usual.
@@ -53,6 +55,15 @@
 
 (require 'cl-lib)
 (require 'imenu)
+
+(defgroup imenu-extra nil
+  "Add extra items into existing imenu items."
+  :group 'tools)
+
+(defcustom imenu-extra-process-item-function 'identity
+  "Function to process extra imenu item."
+  :type 'function
+  :group 'imenu-extra)
 
 (defun imenu-extra-line-range (position)
   "Get the line range at POSITION."
@@ -98,19 +109,25 @@ PATTERNS should be an alist of the same form as `imenu-generic-expression'."
             (when val
               (push (imenu-extra-line-range val) ranges))))
 
+        ;; remove items already defined in original items
+        (setq extra-items
+              (cl-remove-if
+               (lambda (item)
+                 (let* ((position (imenu-extra-position item)))
+                   (cl-some (lambda (item-range)
+                              (and position
+                                   (< position (cdr item-range))
+                                   (>= position (car item-range))))
+                            ranges)))
+               extra-items))
+
+        (setq extra-items
+              (mapcar imenu-extra-process-item-function extra-items))
         ;; EXTRA-ITEMS sample:
         ;; ((function ("hello" . #<marker 63>) ("bye" . #<marker 128>))
         ;;  (controller ("MyController" . #<marker 128))
         ;;  (hello . #<marker 161>))
-        (append original-items
-                (cl-remove-if (lambda (item)
-                                (let* ((position (imenu-extra-position item)))
-                                  (cl-some (lambda (item-range)
-                                             (and position
-                                                  (< position (cdr item-range))
-                                                  (>= position (car item-range))))
-                                           ranges)))
-                              extra-items))))
+        (append original-items extra-items)))
 
      (t
       original-items))))

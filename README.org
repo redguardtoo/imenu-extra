@@ -26,6 +26,8 @@ For example, insert below code *at the end* of =js2-mode-hook= to extract unit t
 #+end_src
 * Usage
 Use imenu as usual.
+* Tips
+- Set =imenu-extra-process-item-function= to process extra imenu items
 * Contact me
 Report bugs at [[https://github.com/redguardtoo/imenu-extra]].
 * License
