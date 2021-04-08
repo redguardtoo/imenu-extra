@@ -21,6 +21,7 @@ For example, insert below code *at the end* of =js2-mode-hook= to extract unit t
             ;; original js2-mode setup ...
 
             ;; at the end of mode hook
+            (require 'imenu-extra)
             (imenu-extra-auto-setup '(("tdd.it" "^[ \t]*it('\\([^']+\\)" 1)
                                       ("tdd.desc" "^[ \t]*describe('\\([^']+\\)" 1))))
 #+end_src
